@@ -30,8 +30,39 @@ func TestDay2(t *testing.T) {
 				t.Errorf("want %d got %d", c.want, got)
 			}
 		})
+
+		t.Run("alt_"+c.name, func(t *testing.T) {
+			got, err := day2alt(c.input, c.part)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !cmp.Equal(got, c.want) {
+				t.Errorf("want %d got %d", c.want, got)
+			}
+		})
 	}
 }
+
+func benchmarkDay2(part int, b *testing.B) {
+	var r int
+	for i := 0; i < b.N; i++ {
+		r, _ = day2(d2i1, part)
+	}
+	bench = r
+}
+func BenchmarkDay2Part1(b *testing.B) { benchmarkDay2(1, b) }
+func BenchmarkDay2Part2(b *testing.B) { benchmarkDay2(2, b) }
+
+func benchmarkDay2Alt(part int, b *testing.B) {
+	var r int
+	for i := 0; i < b.N; i++ {
+		r, _ = day2alt(d2i1, 2)
+	}
+	bench = r
+}
+func BenchmarkDay2AltPart1(b *testing.B) { benchmarkDay2Alt(1, b) }
+func BenchmarkDay2AltPart2(b *testing.B) { benchmarkDay2Alt(2, b) }
 
 const (
 	d2e1 = `Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
