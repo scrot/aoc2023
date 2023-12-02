@@ -18,16 +18,17 @@ func TestDay1(t *testing.T) {
 		{"left", 1, "1ab2b", 12},
 		{"right", 1, "a1ab2", 12},
 		{"onechar", 1, "1", 11},
-		{"example1", 1, e, 142},
-		{"input1", 1, i, 54605},
+		{"example1", 1, example1, 142},
+		{"input1", 1, input, 54605},
 		{"txtleft", 2, "oneaabb2", 12},
 		{"txtright", 2, "1aabbtwo", 12},
 		{"txtboth", 2, "oneaa1bbtwo", 12},
 		{"txtmiddle", 2, "aaone3twobb", 12},
+		{"tricky", 2, "threeight1twone", 31},
 		{"txtsingle", 2, "aonea", 11},
 		{"txtshort", 2, "one", 11},
-		{"example2", 2, e2, 281},
-		{"input2", 2, i, 55429},
+		{"example2", 2, example2, 281},
+		{"input2", 2, input, 55429},
 	}
 
 	for _, c := range cs {
@@ -42,16 +43,52 @@ func TestDay1(t *testing.T) {
 				t.Fatalf("want %d got %d", c.want, got)
 			}
 		})
+
+		t.Run("alt "+c.name, func(t *testing.T) {
+			got, err := day1alt(c.input, c.part)
+			if err != nil {
+				t.Fatalf("expected no error but got %s", err)
+			}
+
+			t.Logf("answer: %d", got)
+			if !cmp.Equal(c.want, got) {
+				t.Fatalf("want %d got %d", c.want, got)
+			}
+		})
 	}
 }
 
+// avoid compiler optimisation
+// https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go
+var bench int
+
+func benchmarkDay1(part int, b *testing.B) {
+	var r int
+	for i := 0; i < b.N; i++ {
+		r, _ = day1(input, part)
+	}
+	bench = r
+}
+func BenchmarkDay1Part1(b *testing.B) { benchmarkDay1(1, b) }
+func BenchmarkDay1Part2(b *testing.B) { benchmarkDay1(2, b) }
+
+func benchmarkDay1Alt(part int, b *testing.B) {
+	var r int
+	for i := 0; i < b.N; i++ {
+		r, _ = day1alt(input, 2)
+	}
+	bench = r
+}
+func BenchmarkDay1AltPart1(b *testing.B) { benchmarkDay1Alt(1, b) }
+func BenchmarkDay1AltPart2(b *testing.B) { benchmarkDay1Alt(2, b) }
+
 const (
-	e = `1abc2
+	example1 = `1abc2
     pqr3stu8vwx
     a1b2c3d4e5f
     treb7uchet`
 
-	e2 = `two1nine
+	example2 = `two1nine
 eightwothree
 abcone2threexyz
 xtwone3four
@@ -59,7 +96,7 @@ xtwone3four
 zoneight234
 7pqrstsixteen`
 
-	i = `twovgtprdzcjjzkq3ffsbcblnpq
+	input = `twovgtprdzcjjzkq3ffsbcblnpq
 two8sixbmrmqzrrb1seven
 9964pfxmmr474
 46one
