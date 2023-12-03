@@ -5,32 +5,30 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/scrot/aoc2023/day1"
-	"github.com/scrot/aoc2023/day2"
-)
-
-var (
-	day     int
-	part    int
-	version int
+	"os/exec"
 )
 
 var cmds = map[string]*flag.FlagSet{
-	"run":    flag.NewFlagSet("run", flag.ExitOnError),
-	"profle": flag.NewFlagSet("profile", flag.ExitOnError),
-	"test":   flag.NewFlagSet("test", flag.ExitOnError),
+	"run":       flag.NewFlagSet("run", flag.ExitOnError),
+	"profile":   flag.NewFlagSet("profile", flag.ExitOnError),
+	"test":      flag.NewFlagSet("test", flag.ExitOnError),
+	"benchmark": flag.NewFlagSet("benchmark", flag.ExitOnError),
 }
 
 func main() {
 	// parse universal flags
+	var day int
 	for _, c := range cmds {
 		c.IntVar(&day, "day", 1, "puzzle day")
-		c.IntVar(&version, "version", 1, "version of puzzle")
-		c.IntVar(&part, "part", 1, "part of the puzzle (1 or 2)")
 	}
 
 	// parse specific flags
+	var version, part int
+	cmds["run"].IntVar(&version, "version", 1, "version of puzzle")
+	cmds["run"].IntVar(&part, "part", 1, "part of the puzzle (1 or 2)")
+	cmds["profile"].IntVar(&version, "version", 1, "version of puzzle")
+	cmds["profile"].IntVar(&part, "part", 1, "part of the puzzle (1 or 2)")
+
 	sub, ok := cmds[os.Args[1]]
 	if !ok {
 		log.Fatalf("invalid subcommand %s", os.Args[1])
@@ -39,24 +37,45 @@ func main() {
 
 	switch os.Args[1] {
 	case "run":
-		run()
-	case "profile":
+		path := fmt.Sprintf("./day%d/input.txt", day)
+		input, _ := os.ReadFile(path)
+		var answer int
+		answer, _ = days[day](input, part, version)
+		fmt.Printf("V%d: Answer day %d part %d is %d\n", version, day, part, answer)
+	case "benchmark":
+		path := fmt.Sprintf("./day%d", day)
+		c := exec.Command("go", "test", "-run='^$'", "-bench=.", path)
+		c.Stdout = os.Stdout
+		fmt.Println(c.String())
+		if err := c.Run(); err != nil {
+			log.Fatalf("%s: %s", c.String(), err)
+		}
 	case "test":
+		path := fmt.Sprintf("./day%d/.", day)
+		c := exec.Command("go", "test", path)
+		c.Stdout = os.Stdout
+		if err := c.Run(); err != nil {
+			log.Fatalf("%s: %s", c.String(), err)
+		}
+	case "profile":
+		path := fmt.Sprintf("./day%d", day)
+		out := fmt.Sprintf("%s/day%d-part%d-version%d-cpu.pprof", path, day, part, version)
+		benchmark := fmt.Sprintf("-bench=BenchmarkDay%dPart%dV%d", day, part, version)
+		c := exec.Command("go", "test", "-run='^$'", benchmark, "-cpuprofile", out, path)
+		if err := c.Run(); err != nil {
+			log.Fatalf("%s: %s", c.String(), err)
+		}
+
+		c = exec.Command("go", "tool", "pprof", "-web", "./aoc2023", out)
+		c.Stdout = os.Stdout
+		if err := c.Run(); err != nil {
+			log.Fatalf("%s: %s", c.String(), err)
+		}
 	}
 }
 
 func run() {
-	path := fmt.Sprintf("./day%d/input.txt", day)
-	input, _ := os.ReadFile(path)
+}
 
-	var answer int
-
-	switch day {
-	case 1:
-		answer, _ = day1.Solve(input, part, version)
-	case 2:
-		answer, _ = day2.Solve(input, part, version)
-	}
-
-	fmt.Printf("Answer day %d part %d: %d\n", day, part, answer)
+func test() {
 }

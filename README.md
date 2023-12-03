@@ -18,11 +18,21 @@ Build and run the program and use `day` to select which puzzle to solve `version
 ## Run tests
 
 ```shell
-❯ go test -run=TestDay1 -v
+❯ go build . && ./aoc2023 test -day 1
 ```
 
 ## Run benchmarks
 
 ```shell
-❯ go test -run=^$ -bench .
+❯ go build . && ./aoc2023 benchmark -day 1
+```
+
+## Run Profiler
+
+Profile generates a `pprof` cpu profile and generates a graph that is opened in the browser. it requires `graphviz` to work (e.g. install it using `brew install graphviz`).
+
+The profiler uses benchmarks that are formatted `BenchmarkDay1Part1V1` to generate a cpu profile.
+
+```shell
+> go build . && ./aoc2023 profile -day 1 -version 1 -part 1
 ```

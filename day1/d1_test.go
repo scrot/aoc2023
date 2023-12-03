@@ -62,7 +62,7 @@ func TestDay1(t *testing.T) {
 			}
 		})
 
-		t.Run("alt "+c.name, func(t *testing.T) {
+		t.Run("v2_"+c.name, func(t *testing.T) {
 			got, err := SolveV2(c.input, c.part)
 			if err != nil {
 				t.Fatalf("expected no error but got %s", err)
@@ -87,7 +87,7 @@ func benchmarkDay1(version, part int, b *testing.B) {
 	}
 	bench = r
 }
-func BenchmarkDay1Part1(b *testing.B)    { benchmarkDay1(1, 1, b) }
-func BenchmarkDay1Part2(b *testing.B)    { benchmarkDay1(1, 2, b) }
-func BenchmarkDay1AltPart1(b *testing.B) { benchmarkDay1(2, 1, b) }
-func BenchmarkDay1AltPart2(b *testing.B) { benchmarkDay1(2, 2, b) }
+func BenchmarkDay1Part1V1(b *testing.B) { benchmarkDay1(1, 1, b) }
+func BenchmarkDay1Part2V1(b *testing.B) { benchmarkDay1(1, 2, b) }
+func BenchmarkDay1Part1V2(b *testing.B) { benchmarkDay1(2, 1, b) }
+func BenchmarkDay1Part2V2(b *testing.B) { benchmarkDay1(2, 2, b) }
