@@ -3,7 +3,7 @@ package day4
 import (
 	"bufio"
 	"bytes"
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 )
@@ -21,9 +21,8 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	var ci int
 	for s.Scan() {
 		ci++
-		card := s.Text()
-		prefix := fmt.Sprintf("Card %d: ", ci)
-		card, _ = strings.CutPrefix(card, prefix)
+
+		card := s.Text()[9:]
 		win, cur, _ := strings.Cut(card, " | ")
 
 		var points int
@@ -51,7 +50,11 @@ func (V1) Solve(input []byte, part int) (int, error) {
 		scratchcards += count
 	}
 
-	return scratchcards, nil
+	if part == 2 {
+		return scratchcards, nil
+	}
+
+	return 0, errors.New("invalid part")
 }
 
 func in(numbers, inNumbers string) (won []int) {

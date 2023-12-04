@@ -26,11 +26,11 @@ func TestDay4(t *testing.T) {
 		input []byte
 		want  int
 	}{
-		{"none", 1, []byte("Card 1: 0 1 2 | 3 4 5"), 0},
-		{"all", 1, []byte("Card 1: 1 2 3 | 1 2 3"), 4},
-		{"mixed", 1, []byte("Card 1: 2 1 3 | 1 2 3"), 4},
-		{"large", 1, []byte("Card 1: 200 111 9 | 111 200 3"), 2},
-		{"sum", 1, []byte("Card 1: 1 2 | 1 2\nCard 2: 1 2 | 1 2"), 4},
+		{"none", 1, []byte("Card   1: 0 1 2 | 3 4 5"), 0},
+		{"all", 1, []byte("Card   1: 1 2 3 | 1 2 3"), 4},
+		{"mixed", 1, []byte("Card   1: 2 1 3 | 1 2 3"), 4},
+		{"large", 1, []byte("Card   1: 200 111 9 | 111 200 3"), 2},
+		{"sum", 1, []byte("Card   1: 1 2 | 1 2\nCard   2: 1 2 | 1 2"), 4},
 		{"example", 1, []byte(example), 13},
 		{"input", 1, input, 23750},
 		{"example", 2, []byte(example), 30},

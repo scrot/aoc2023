@@ -5,23 +5,22 @@ import "errors"
 type V1 struct{}
 
 func (V1) Solve(input []byte, part int) (int, error) {
-	if part > 2 {
-		return 0, errors.New("invalid part")
-	}
-
-	var vlen int
+	var width int
 	for _, b := range input {
 		if rune(b) == '\n' {
 			break
 		}
-		vlen++
+		width++
 	}
 
-	if part == 1 {
-		return partNumbers(input, vlen), nil
+	switch part {
+	case 1:
+		return partNumbers(input, width), nil
+	case 2:
+		return gearRatio(input, width), nil
+	default:
+		return 0, errors.New("invalid part")
 	}
-
-	return gearRatio(input, vlen), nil
 }
 
 func gearRatio(input []byte, vlen int) int {
@@ -116,8 +115,9 @@ func adjecent(input []byte, index, vlen int) bool {
 
 func surround(input []byte, index, vlen int) map[int]byte {
 	is := []int{
-		-vlen - 2, -vlen - 1, -vlen, -1,
-		1, vlen, vlen + 1, vlen + 2,
+		-vlen - 2, -vlen - 1, -vlen,
+		-1, 1,
+		vlen, vlen + 1, vlen + 2,
 	}
 
 	surround := make(map[int]byte)
@@ -132,9 +132,5 @@ func surround(input []byte, index, vlen int) map[int]byte {
 }
 
 func isDigit(b byte) bool {
-	r := rune(b)
-	if r-'0' >= 0 && r-'0' <= 9 {
-		return true
-	}
-	return false
+	return '0' <= b && b <= '9'
 }
