@@ -3,13 +3,20 @@ package day2
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-func SolveV1(input []byte, part int) (int, error) {
+type V1 struct{}
+
+func (_ V1) Solve(input []byte, part int) (int, error) {
+	if part > 2 {
+		return 0, errors.New("invalid part")
+	}
+
 	r := bytes.NewReader(input)
 	s := bufio.NewScanner(r)
 

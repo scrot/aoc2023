@@ -1,8 +1,14 @@
 package day3
 
-import "fmt"
+import "errors"
 
-func SolveV1(input []byte, part int) (int, error) {
+type V1 struct{}
+
+func (_ V1) Solve(input []byte, part int) (int, error) {
+	if part > 2 {
+		return 0, errors.New("invalid part")
+	}
+
 	var vlen int
 	for _, b := range input {
 		if rune(b) == '\n' {
@@ -23,7 +29,6 @@ func gearRatio(input []byte, vlen int) int {
 	for i, b := range input {
 		if rune(b) == '*' {
 			ns := numbers(input, i, vlen)
-			fmt.Println(ns)
 			if len(ns) == 2 {
 				ans += ns[0] * ns[1]
 			}
@@ -68,7 +73,6 @@ func partNumbers(input []byte, vlen int) int {
 func numbers(input []byte, index, vlen int) []int {
 	var is []int
 	ss := surround(input, index, vlen)
-	fmt.Println(ss)
 	for i := range ss {
 		// skip if surrounding not number
 		if !isDigit(input[i]) {
@@ -118,8 +122,9 @@ func surround(input []byte, index, vlen int) map[int]byte {
 
 	surround := make(map[int]byte)
 	for _, i := range is {
-		if index+i >= 0 && index+i < len(input) {
-			surround[index+i] = input[index+i]
+		x := index + i
+		if x >= 0 && x < len(input) {
+			surround[x] = input[x]
 		}
 	}
 

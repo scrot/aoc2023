@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/scrot/aoc2023"
 )
 
 var cmds = map[string]*flag.FlagSet{
@@ -40,13 +42,16 @@ func main() {
 		path := fmt.Sprintf("./day%d/input.txt", day)
 		input, _ := os.ReadFile(path)
 		var answer int
-		answer, _ = days[day](input, part, version)
+		answer, err := aoc2023.Days[day][version-1].Solve(input, part)
+		if err != nil {
+			fmt.Printf("V%d: error %q\n", version, err)
+			break
+		}
 		fmt.Printf("V%d: Answer day %d part %d is %d\n", version, day, part, answer)
 	case "benchmark":
 		path := fmt.Sprintf("./day%d", day)
 		c := exec.Command("go", "test", "-run='^$'", "-bench=.", path)
 		c.Stdout = os.Stdout
-		fmt.Println(c.String())
 		if err := c.Run(); err != nil {
 			log.Fatalf("%s: %s", c.String(), err)
 		}
@@ -72,10 +77,4 @@ func main() {
 			log.Fatalf("%s: %s", c.String(), err)
 		}
 	}
-}
-
-func run() {
-}
-
-func test() {
 }

@@ -1,4 +1,4 @@
-package main
+package aoc2023
 
 import (
 	"github.com/scrot/aoc2023/day1"
@@ -6,8 +6,12 @@ import (
 	"github.com/scrot/aoc2023/day3"
 )
 
-var days = map[int]func([]byte, int, int) (int, error){
-	1: day1.Solve,
-	2: day2.Solve,
-	3: day3.Solve,
+type Solver interface {
+	Solve([]byte, int) (int, error)
+}
+
+var Days = map[int][]Solver{
+	1: {day1.V1{}, day1.V2{}},
+	2: {day2.V1{}, day2.V1{}},
+	3: {day3.V1{}},
 }

@@ -3,9 +3,16 @@ package day2
 import (
 	"bufio"
 	"bytes"
+	"errors"
 )
 
-func SolveV2(input []byte, part int) (int, error) {
+type V2 struct{}
+
+func (_ V2) Solve(input []byte, part int) (int, error) {
+	if part > 2 {
+		return 0, errors.New("invalid part")
+	}
+
 	r := bytes.NewReader(input)
 	s := bufio.NewScanner(r)
 
