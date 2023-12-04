@@ -4,7 +4,7 @@ import "errors"
 
 type V1 struct{}
 
-func (_ V1) Solve(input []byte, part int) (int, error) {
+func (V1) Solve(input []byte, part int) (int, error) {
 	if part > 2 {
 		return 0, errors.New("invalid part")
 	}

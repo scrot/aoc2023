@@ -2,8 +2,10 @@ package day3_test
 
 import (
 	_ "embed"
+	"fmt"
 	"testing"
 
+	"github.com/scrot/aoc2023"
 	"github.com/scrot/aoc2023/day3"
 )
 
@@ -69,4 +71,31 @@ func TestDay3(t *testing.T) {
 			}
 		})
 	}
+}
+
+var bench int
+
+func benchmarkDay3(version, part int, b *testing.B) {
+	var r int
+	for i := 0; i < b.N; i++ {
+		s, err := newSolver(version)
+		if err != nil {
+			b.Fatal(err)
+		}
+		r, _ = s.Solve(input, part)
+	}
+	bench = r
+}
+func BenchmarkDay3Part1V1(b *testing.B) { benchmarkDay3(1, 1, b) }
+func BenchmarkDay3Part2V1(b *testing.B) { benchmarkDay3(1, 2, b) }
+
+func newSolver(version int) (aoc2023.Solver, error) {
+	var s aoc2023.Solver
+	switch version {
+	case 1:
+		s = day3.V1{}
+	default:
+		return s, fmt.Errorf("invalid version %d", version)
+	}
+	return s, nil
 }
