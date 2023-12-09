@@ -3,7 +3,8 @@ package day5
 import (
 	"bufio"
 	"bytes"
-	"sort"
+	"cmp"
+	"slices"
 )
 
 type V1 struct{}
@@ -18,147 +19,142 @@ func newRule(src int, dst int, length int) rule {
 	return rule{src, src + length - 1, dst - src}
 }
 
-type mapping struct {
-	rs []rule
-}
-
-func (m mapping) Len() int {
-	return len(m.rs)
-}
-
-func (m mapping) Less(i, j int) bool {
-	return m.rs[i].start < m.rs[j].start
-}
-
-func (m mapping) Swap(i, j int) {
-	m.rs[i], m.rs[j] = m.rs[j], m.rs[i]
-}
+type mapping = []rule
 
 func (V1) Solve(input []byte, part int) (int, error) {
 	r := bytes.NewReader(input)
 	s := bufio.NewScanner(r)
 
-	var (
-		seeds   [][2]int
-		almanac []mapping
-	)
+	// first line to seed ranges
+	s.Scan()
+	source := seeds(s.Text(), part)
 
-	if s.Scan() {
-		ns := numbers(s.Text())
-
-		if part == 1 {
-			for _, n := range ns {
-				seeds = append(seeds, [2]int{n, n})
-			}
-		}
-
-		if part == 2 {
-			for i := 0; i < len(ns)-1; i += 2 {
-				seeds = append(seeds, [2]int{ns[i], ns[i] + ns[i+1] - 1})
-			}
-		}
-	}
-
+	// for each map translate sources to destinations
 	var m mapping
-	for s.Scan() {
+	for i := 0; i < 7; {
+		s.Scan()
 		ns := numbers(s.Text())
 
 		if len(ns) > 0 {
-			m.rs = append(m.rs, newRule(ns[1], ns[0], ns[2]))
-		} else {
-			if m.Len() > 0 {
-				sort.Sort(m)
-				almanac = append(almanac, m)
-				m = mapping{}
+			m = append(m, newRule(ns[1], ns[0], ns[2]))
+			continue
+		}
+
+		if len(m) > 0 {
+			slices.SortFunc(m, func(a, b rule) int {
+				return cmp.Compare(a.start, b.start)
+			})
+
+			var destination [][2]int
+			for _, s := range source {
+				destination = append(destination, destinations(s, m)...)
 			}
+			source = destination
+
+			m = mapping{}
+			i++
 		}
 	}
 
-	if m.Len() > 0 {
-		sort.Sort(m)
-		almanac = append(almanac, m)
-		m = mapping{}
-	}
-
-	locs := seeds
-	for _, m := range almanac {
-		ds := locs
-		locs = [][2]int{}
-		for _, d := range ds {
-			locs = append(locs, destination(d, m.rs)...)
-		}
-	}
-
-	closest := -1
-	for _, l := range locs {
-		if l[0] < closest || closest == -1 {
-			closest = l[0]
-		}
-	}
+	// find lowest location
+	closest := slices.MinFunc(source, func(a, b [2]int) int {
+		return cmp.Compare(a[0], b[0])
+	})[0]
 
 	return closest, nil
 }
 
-// destination recusively checks a seed against all
-// mapping rules returning the destination ranges
-func destination(src [2]int, rs []rule) [][2]int {
+// seeds parses seeds numbers
+// for part 1 each number is a seed range of 1
+// for part 2 each pair is transformed to start-end
+func seeds(line string, part int) [][2]int {
 	var (
-		ds        [][2]int
-		remainder [2]int
+		seeds [][2]int
+		ns    = numbers(line)
 	)
 
-	// tail condition
+	switch part {
+	case 1:
+		for _, n := range ns {
+			seeds = append(seeds, [2]int{n, n})
+		}
+	case 2:
+		for i := 0; i < len(ns)-1; i += 2 {
+			seeds = append(seeds,
+				[2]int{ns[i], ns[i] + ns[i+1] - 1},
+			)
+		}
+	}
+
+	return seeds
+}
+
+// destinations recusively checks a seed against all
+// mapping rules returning the destinations ranges
+func destinations(src [2]int, rs []rule) [][2]int {
+	var (
+		ds    [][2]int
+		right [2]int
+	)
+
+	// tail: no source range
 	if src == [2]int{} {
 		return [][2]int{}
 	}
 
+	// tail: no rules left
 	if len(rs) == 0 {
 		return [][2]int{src}
 	}
 
 	// split for current rule
-	xs, remainder := split(src, rs[0])
-	ds = append(ds, xs...)
+	left, mid, right := splitv2(src, rs[0])
+	if left != [2]int{} {
+		ds = append(ds, left)
+	}
 
-	// remainder recursive
-	ds = append(ds, destination(remainder, rs[1:])...)
+	if mid != [2]int{} {
+		ds = append(ds, mid)
+	}
 
-	// fmt.Printf("ds: %v\n", ds)
+	// recusively append destinations of remaining rules
+	ds = append(ds, destinations(right, rs[1:])...)
 
 	return ds
 }
 
-func split(src [2]int, r rule) ([][2]int, [2]int) {
-	switch {
-	case src[1] < r.start:
-		return [][2]int{src}, [2]int{}
-	case src[0] > r.end:
-		return [][2]int{}, src
-	case r.start <= src[0] && src[1] <= r.end:
-		return [][2]int{{src[0] + r.offset, src[1] + r.offset}}, [2]int{}
-	case src[0] < r.start && src[1] <= r.end:
-		lhs := [2]int{src[0], r.start - 1}
-		rhs := [2]int{r.start + r.offset, src[0] + r.offset}
-		return [][2]int{lhs, rhs}, [2]int{}
-	case src[0] >= r.start && src[1] > r.start:
-		lhs := [2]int{src[0] + r.offset, r.end + r.offset}
-		rhs := [2]int{r.end + 1, src[1]}
-		return [][2]int{lhs}, rhs
-	case src[0] < r.start && src[1] > r.end:
-		lhs := [2]int{src[0], r.start - 1}
-		mid := [2]int{r.start + r.offset, r.end + r.offset}
-		rhs := [2]int{r.end + 1, src[1]}
-		return [][2]int{lhs, mid}, rhs
-	default:
-		return [][2]int{}, [2]int{}
+func splitv2(src [2]int, r rule) ([2]int, [2]int, [2]int) {
+	if r.start <= src[0] && src[1] <= r.end {
+		mid := [2]int{src[0] + r.offset, src[1] + r.offset}
+		return [2]int{}, mid, [2]int{}
 	}
+
+	left, rest := cut(src, r.start-1)
+	mid, right := cut(rest, r.end)
+
+	if mid != [2]int{} {
+		mid[0] += r.offset
+		mid[1] += r.offset
+	}
+
+	return left, mid, right
+}
+
+func cut(src [2]int, i int) ([2]int, [2]int) {
+	if i < src[0] {
+		return [2]int{}, src
+	}
+	if i >= src[1] {
+		return src, [2]int{}
+	}
+	return [2]int{src[0], i}, [2]int{i + 1, src[1]}
 }
 
 func numbers(line string) []int {
 	var (
-		isNumber bool
 		number   int
 		numbers  []int
+		isNumber bool
 	)
 
 	for _, r := range line {
