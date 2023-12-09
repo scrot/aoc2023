@@ -23,7 +23,7 @@ func TestDay6(t *testing.T) {
 		{"example", 1, []byte(example), 288},
 		{"input", 1, input, 1159152},
 		{"example", 2, []byte(example), 71503},
-		{"input", 2, input, 0},
+		{"input", 2, input, 41513103},
 	}
 
 	for _, c := range cs {
