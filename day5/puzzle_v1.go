@@ -3,15 +3,35 @@ package day5
 import (
 	"bufio"
 	"bytes"
-	"fmt"
+	"sort"
 )
 
 type V1 struct{}
 
-type Mapping struct {
-	Start  int
-	End    int
-	Offset int
+type rule struct {
+	start  int
+	end    int
+	offset int
+}
+
+func newRule(src int, dst int, length int) rule {
+	return rule{src, src + length - 1, dst - src}
+}
+
+type mapping struct {
+	rs []rule
+}
+
+func (m mapping) Len() int {
+	return len(m.rs)
+}
+
+func (m mapping) Less(i, j int) bool {
+	return m.rs[i].start < m.rs[j].start
+}
+
+func (m mapping) Swap(i, j int) {
+	m.rs[i], m.rs[j] = m.rs[j], m.rs[i]
 }
 
 func (V1) Solve(input []byte, part int) (int, error) {
@@ -19,111 +39,118 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	s := bufio.NewScanner(r)
 
 	var (
-		first = true
-		ms    []Mapping
-		seeds []Mapping
+		seeds   [][2]int
+		almanac []mapping
 	)
 
-	for s.Scan() {
-		line := s.Text()
+	if s.Scan() {
+		ns := numbers(s.Text())
 
-		// numbers in line
-		ns := numbers(line)
-
-		// first seeds line
-		if first {
+		if part == 1 {
 			for _, n := range ns {
-				if part == 1 {
-					seeds = append(seeds, Mapping{n, n, 0})
-				}
+				seeds = append(seeds, [2]int{n, n})
 			}
-			first = false
-			continue
 		}
 
-		// skip all non number rows
-		if len(ns) == 0 {
-			// update source numbers with desination
-			if len(ms) > 0 {
-				var res []Mapping
-				for _, s := range seeds {
-					res = append(res, Destination(s, ms))
-				}
-				seeds = res
-
-				ms = []Mapping{}
+		if part == 2 {
+			for i := 0; i < len(ns)-1; i += 2 {
+				seeds = append(seeds, [2]int{ns[i], ns[i] + ns[i+1] - 1})
 			}
-			continue
 		}
-
-		ms = append(ms, Convert(ns))
 	}
 
-	// process last map
-	if len(ms) > 0 {
-		var res []Mapping
-		for _, s := range seeds {
-			res = append(res, Destination(s, ms))
+	var m mapping
+	for s.Scan() {
+		ns := numbers(s.Text())
+
+		if len(ns) > 0 {
+			m.rs = append(m.rs, newRule(ns[1], ns[0], ns[2]))
+		} else {
+			if m.Len() > 0 {
+				sort.Sort(m)
+				almanac = append(almanac, m)
+				m = mapping{}
+			}
 		}
-		seeds = res
 	}
 
-	fmt.Println(seeds)
+	if m.Len() > 0 {
+		sort.Sort(m)
+		almanac = append(almanac, m)
+		m = mapping{}
+	}
 
-	return Closest(seeds), nil
-}
+	locs := seeds
+	for _, m := range almanac {
+		ds := locs
+		locs = [][2]int{}
+		for _, d := range ds {
+			locs = append(locs, destination(d, m.rs)...)
+		}
+	}
 
-// closest returns the lowest of a range of mappings
-func Closest(locations []Mapping) int {
 	closest := -1
-	for _, l := range locations {
-		if l.Start+l.Offset < closest || closest == -1 {
-			closest = l.Start + l.Offset
+	for _, l := range locs {
+		if l[0] < closest || closest == -1 {
+			closest = l[0]
 		}
 	}
-	return closest
+
+	return closest, nil
 }
 
-// Destination updates offset of s if it matches a
-// range in ms, otherwise it returns s
-func Destination(s Mapping, ms []Mapping) Mapping {
-	for _, m := range ms {
-		o := Overlapping(s, m)
-		empty := Mapping{}
-		if o != empty {
-			return o
-		}
-	}
-	return s
-}
-
-// Overlapping calculates section where a range in m
-// overlaps with s or returns empty map if no overlap
-func Overlapping(s, m Mapping) Mapping {
+// destination recusively checks a seed against all
+// mapping rules returning the destination ranges
+func destination(src [2]int, rs []rule) [][2]int {
 	var (
-		res        = Mapping{m.Start, m.End, s.Offset + m.Offset}
-		start, end = s.Start + s.Offset, s.End + s.Offset
+		ds        [][2]int
+		remainder [2]int
 	)
 
-	if start <= m.End && end >= m.Start {
-		if start >= m.Start {
-			res.Start = s.Start
-		}
-		if end <= m.End {
-			res.End = s.Start
-		}
-		return res
+	// tail condition
+	if src == [2]int{} {
+		return [][2]int{}
 	}
 
-	return Mapping{}
+	if len(rs) == 0 {
+		return [][2]int{src}
+	}
+
+	// split for current rule
+	xs, remainder := split(src, rs[0])
+	ds = append(ds, xs...)
+
+	// remainder recursive
+	ds = append(ds, destination(remainder, rs[1:])...)
+
+	// fmt.Printf("ds: %v\n", ds)
+
+	return ds
 }
 
-// Convert translate range notation to mapping
-func Convert(numbers []int) Mapping {
-	return Mapping{
-		numbers[1],
-		numbers[1] + numbers[2] - 1,
-		numbers[0] - numbers[1],
+func split(src [2]int, r rule) ([][2]int, [2]int) {
+	switch {
+	case src[1] < r.start:
+		return [][2]int{src}, [2]int{}
+	case src[0] > r.end:
+		return [][2]int{}, src
+	case r.start <= src[0] && src[1] <= r.end:
+		return [][2]int{{src[0] + r.offset, src[1] + r.offset}}, [2]int{}
+	case src[0] < r.start && src[1] <= r.end:
+		lhs := [2]int{src[0], r.start - 1}
+		rhs := [2]int{r.start + r.offset, src[0] + r.offset}
+		return [][2]int{lhs, rhs}, [2]int{}
+	case src[0] >= r.start && src[1] > r.start:
+		lhs := [2]int{src[0] + r.offset, r.end + r.offset}
+		rhs := [2]int{r.end + 1, src[1]}
+		return [][2]int{lhs}, rhs
+	case src[0] < r.start && src[1] > r.end:
+		lhs := [2]int{src[0], r.start - 1}
+		mid := [2]int{r.start + r.offset, r.end + r.offset}
+		rhs := [2]int{r.end + 1, src[1]}
+		return [][2]int{lhs, mid}, rhs
+	default:
+		return [][2]int{}, [2]int{}
 	}
 }
 
