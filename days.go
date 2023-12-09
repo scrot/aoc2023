@@ -7,6 +7,7 @@ import (
 	"github.com/scrot/aoc2023/day4"
 	"github.com/scrot/aoc2023/day5"
 	"github.com/scrot/aoc2023/day6"
+	"github.com/scrot/aoc2023/day7"
 )
 
 type Solver interface {
@@ -19,5 +20,6 @@ var Days = map[int][]Solver{
 	3: {day3.V1{}},
 	4: {day4.V1{}},
 	5: {day5.V1{}},
-	6: {day6.V1{}},
+	6: {day6.V1{}, day6.V2{}},
+	7: {day7.V1{}},
 }

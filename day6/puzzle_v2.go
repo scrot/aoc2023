@@ -3,12 +3,11 @@ package day6
 import (
 	"bufio"
 	"bytes"
-	"strings"
 )
 
-type V1 struct{}
+type V2 struct{}
 
-func (V1) Solve(input []byte, part int) (int, error) {
+func (V2) Solve(input []byte, part int) (int, error) {
 	r := bytes.NewReader(input)
 	s := bufio.NewScanner(r)
 
@@ -18,9 +17,10 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	for i := 0; s.Scan(); i++ {
 		l := s.Text()
 		if part == 2 {
-			l = strings.ReplaceAll(l, " ", "")
+			races = append(races, numbers(l, true))
+		} else {
+			races = append(races, numbers(l, false))
 		}
-		races = append(races, numbersV1(l))
 	}
 
 	for i := 0; i < len(races[0]); i++ {
@@ -30,11 +30,15 @@ func (V1) Solve(input []byte, part int) (int, error) {
 		)
 
 		// hold * remaining time = distance
-		for t := 1; t < time; t++ {
+		for t := time / 2; t > 0; t-- {
 			distance := t * (time - t)
 			if distance > record {
-				count++
+				count += 2
 			}
+		}
+
+		if time%2 == 0 {
+			count--
 		}
 
 		answer *= count
@@ -43,7 +47,7 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	return answer, nil
 }
 
-func numbersV1(line string) []int {
+func numbers(line string, ignoreWs bool) []int {
 	var (
 		number  int
 		numbers []int
@@ -54,6 +58,10 @@ func numbersV1(line string) []int {
 			d := int(r - '0')
 			number *= 10
 			number += d
+			continue
+		}
+
+		if ignoreWs && r == ' ' {
 			continue
 		}
 

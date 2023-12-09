@@ -2,7 +2,6 @@ package day2_test
 
 import (
 	_ "embed"
-	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -59,31 +58,12 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green`
 
 var bench int
 
-func benchmarkDay2(version, part int, b *testing.B) {
-	var r int
+func benchmarkDay1(b *testing.B, s aoc2023.Solver, part int) {
 	for i := 0; i < b.N; i++ {
-		s, err := newSolver(version)
-		if err != nil {
-			b.Fatal(err)
-		}
-		r, _ = s.Solve(input, part)
+		s.Solve(input, part)
 	}
-	bench = r
 }
-func BenchmarkDay2Part1V1(b *testing.B) { benchmarkDay2(1, 1, b) }
-func BenchmarkDay2Part2V1(b *testing.B) { benchmarkDay2(1, 2, b) }
-func BenchmarkDay2Part1V2(b *testing.B) { benchmarkDay2(2, 1, b) }
-func BenchmarkDay2Part2V2(b *testing.B) { benchmarkDay2(2, 2, b) }
-
-func newSolver(version int) (aoc2023.Solver, error) {
-	var s aoc2023.Solver
-	switch version {
-	case 1:
-		s = day2.V1{}
-	case 2:
-		s = day2.V2{}
-	default:
-		return s, fmt.Errorf("invalid version %d", version)
-	}
-	return s, nil
-}
+func BenchmarkDay2Part1V1(b *testing.B) { benchmarkDay1(b, day2.V1{}, 1) }
+func BenchmarkDay2Part2V1(b *testing.B) { benchmarkDay1(b, day2.V1{}, 2) }
+func BenchmarkDay2Part1V2(b *testing.B) { benchmarkDay1(b, day2.V2{}, 1) }
+func BenchmarkDay2Part2V2(b *testing.B) { benchmarkDay1(b, day2.V2{}, 2) }

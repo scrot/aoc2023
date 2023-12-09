@@ -2,7 +2,6 @@ package day1_test
 
 import (
 	_ "embed"
-	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -79,35 +78,12 @@ func TestDay1(t *testing.T) {
 	}
 }
 
-// avoid compiler optimisation
-// https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go
-var bench int
-
-func benchmarkDay1(version, part int, b *testing.B) {
-	var r int
+func benchmarkDay1(b *testing.B, s aoc2023.Solver, part int) {
 	for i := 0; i < b.N; i++ {
-		s, err := newSolver(version)
-		if err != nil {
-			b.Fatal(err)
-		}
-		r, _ = s.Solve(input, part)
+		s.Solve(input, part)
 	}
-	bench = r
 }
-func BenchmarkDay1Part1V1(b *testing.B) { benchmarkDay1(1, 1, b) }
-func BenchmarkDay1Part2V1(b *testing.B) { benchmarkDay1(1, 2, b) }
-func BenchmarkDay1Part1V2(b *testing.B) { benchmarkDay1(2, 1, b) }
-func BenchmarkDay1Part2V2(b *testing.B) { benchmarkDay1(2, 2, b) }
-
-func newSolver(version int) (aoc2023.Solver, error) {
-	var s aoc2023.Solver
-	switch version {
-	case 1:
-		s = day1.V1{}
-	case 2:
-		s = day1.V2{}
-	default:
-		return s, fmt.Errorf("invalid version %d", version)
-	}
-	return s, nil
-}
+func BenchmarkDay1Part1V1(b *testing.B) { benchmarkDay1(b, day1.V1{}, 1) }
+func BenchmarkDay1Part2V1(b *testing.B) { benchmarkDay1(b, day1.V1{}, 2) }
+func BenchmarkDay1Part1V2(b *testing.B) { benchmarkDay1(b, day1.V2{}, 1) }
+func BenchmarkDay1Part2V2(b *testing.B) { benchmarkDay1(b, day1.V2{}, 2) }
