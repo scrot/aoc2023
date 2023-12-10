@@ -30,12 +30,7 @@ func (V2) Solve(input []byte, part int) (int, error) {
 		)
 
 		// hold * remaining time = distance
-		for t := time / 2; t > 0; t-- {
-			distance := t * (time - t)
-			if distance > record {
-				count += 2
-			}
-		}
+		count = 2 * (time/2 - search(record, time, 0, time/2) + 1)
 
 		if time%2 == 0 {
 			count--
@@ -45,6 +40,22 @@ func (V2) Solve(input []byte, part int) (int, error) {
 	}
 
 	return answer, nil
+}
+
+func search(find, total, lower, upper int) int {
+	mid := int((upper-lower)/2) + lower
+
+	distance := mid * (total - mid)
+
+	if lower == upper {
+		return lower
+	}
+
+	if distance > find {
+		return search(find, total, lower, mid)
+	} else {
+		return search(find, total, mid+1, upper)
+	}
 }
 
 func numbers(line string, ignoreWs bool) []int {
