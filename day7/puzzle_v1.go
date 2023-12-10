@@ -3,7 +3,6 @@ package day7
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"slices"
 	"sort"
 	"strconv"
@@ -84,7 +83,6 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	var winnings int
 	for i, h := range hs.arr {
 		winnings += (i + 1) * h.bid
-		fmt.Printf("hand %v strength %v\n", h, strength(h, part))
 	}
 
 	return winnings, nil

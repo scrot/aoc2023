@@ -33,7 +33,7 @@ func TestDay7(t *testing.T) {
 		{"p1Example", 1, day7.V1{}, []byte(example), 6440},
 		{"p1Input", 1, day7.V1{}, input, 253603890},
 		{"p2Example", 2, day7.V1{}, []byte(example), 5905},
-		{"p2Input", 2, day7.V1{}, input, 0},
+		{"p2Input", 2, day7.V1{}, input, 253630098},
 	}
 
 	for _, c := range cs {
