@@ -47,6 +47,7 @@ func search(find, total, lower, upper int) int {
 
 	distance := mid * (total - mid)
 
+	// fmt.Printf("search: find %d, distance: %d, total %d, lower %d, upper %d, mid %d\n", find, distance, total, lower, upper, mid)
 	if lower == upper {
 		return lower
 	}
