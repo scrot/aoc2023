@@ -76,11 +76,11 @@ func TestDay10(t *testing.T) {
 		// {"p1Example1", 1, day10.V1{}, []byte(example), 4},
 		// {"p1Example2", 1, day10.V1{}, []byte(example2), 8},
 		// {"p1Input", 1, day10.V1{}, input, 7086},
-		{"p1Example31", 2, day10.V1{}, []byte(example31), 4},
+		// {"p1Example31", 2, day10.V1{}, []byte(example31), 4},
 		// {"p1Example31", 2, day10.V1{}, []byte(example32), 4},
 		// {"p1Example4", 2, day10.V1{}, []byte(example4), 8},
 		// {"p1Example5", 2, day10.V1{}, []byte(example5), 10},
-		// {"p2Input", 2, day10.V1{}, input, 0},
+		{"p2Input", 2, day10.V1{}, input, 0},
 	}
 
 	for _, c := range cs {

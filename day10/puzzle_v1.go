@@ -8,6 +8,9 @@ import (
 
 type V1 struct{}
 
+// Maze represents the pipesystem
+type maze [][]rune
+
 // pretty maps ugly symbols to pretty ones
 var pretty = map[rune]rune{
 	'|': '│',
@@ -19,8 +22,6 @@ var pretty = map[rune]rune{
 	'.': ' ',
 	'S': '🐿',
 }
-
-type maze [][]rune
 
 // build new pretty maze
 func newMaze(s *bufio.Scanner) (maze, loc) {
@@ -65,43 +66,7 @@ func (m maze) filter(end loc) maze {
 	return m
 }
 
-func (V1) Solve(input []byte, part int) (int, error) {
-	var (
-		r         = bytes.NewReader(input)
-		s         = bufio.NewScanner(r)
-		mz, start = newMaze(s)
-	)
-	fmt.Println(mz)
-
-	var (
-		count = 0
-		end   = loc{start.coord, start.prev, '┌'}
-	)
-
-	for len(end.directions(mz)) > 0 {
-		fmt.Printf("cw: %s, prev: %s\n", end, end.prev)
-		end = end.directions(mz)[0]
-		count++
-	}
-
-	if part == 2 {
-		var in bool
-		mz = mz.filter(end)
-
-		for y, row := range mz {
-			for x, r := range row {
-				// check
-				if r == ' ' && in {
-					mz[y][x] = '░'
-				}
-			}
-		}
-		fmt.Println(mz)
-	}
-
-	return count/2 + 1, nil
-}
-
+// loc represents a location in a maze
 type loc struct {
 	coord  [2]int
 	prev   *loc
@@ -151,30 +116,59 @@ func (l loc) direction(dir int) [2]int {
 	return [2]int{l.coord[0] + ls[dir][0], l.coord[1] + ls[dir][1]}
 }
 
-func inside(cur loc, dir [2]int) [2]int {
-	switch cur.symbol {
-	case '┘':
-		if dir == [2]int{0, -1} {
-			return [2]int{1, 0}
+func (V1) Solve(input []byte, part int) (int, error) {
+	var (
+		r         = bytes.NewReader(input)
+		s         = bufio.NewScanner(r)
+		mz, start = newMaze(s)
+	)
+	fmt.Println(mz)
+
+	var (
+		count = 0
+		end   = loc{start.coord, start.prev, '┌'}
+	)
+
+	for len(end.directions(mz)) > 0 {
+		// fmt.Printf("cw: %s, prev: %s\n", end, end.prev)
+		end = end.directions(mz)[0]
+		count++
+	}
+
+	if part == 2 {
+		var (
+			mz    = mz.filter(end)
+			count int
+			in    bool
+		)
+
+		fmt.Println(mz)
+
+		for y, row := range mz {
+			for x, col := range row {
+				in = updateIn(col, in)
+				if col == ' ' && in {
+					mz[y][x] = '░'
+					count++
+				}
+			}
+			fmt.Println(mz)
 		}
-		return [2]int{0, -1}
-	case '┐':
-		if dir == [2]int{0, 1} {
-			return [2]int{-1, 0}
-		}
-		return [2]int{0, 1}
-	case '┌':
-		if dir == [2]int{1, 0} {
-			return [2]int{0, 1}
-		}
-		return [2]int{1, 0}
-	case '└':
-		if dir == [2]int{1, 0} {
-			return [2]int{0, -1}
-		}
-		return [2]int{1, 0}
+
+		return count, nil
+	}
+
+	return count/2 + 1, nil
+}
+
+func updateIn(r rune, in bool) bool {
+	switch r {
+	// case '│', '┌', '└', '┐', '┘':
+	// 	return !in
+	case '│', '┌', '┐':
+		return !in
 	default:
-		return cur.coord
+		return in
 	}
 }
 
