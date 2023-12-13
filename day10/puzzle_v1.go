@@ -8,7 +8,39 @@ import (
 
 type V1 struct{}
 
+// pretty maps ugly symbols to pretty ones
+var pretty = map[rune]rune{
+	'|': '│',
+	'-': '─',
+	'F': '┌',
+	'L': '└',
+	'7': '┐',
+	'J': '┘',
+	'.': ' ',
+	'S': '🐿',
+}
+
 type maze [][]rune
+
+// build new pretty maze
+func newMaze(s *bufio.Scanner) (maze, loc) {
+	var (
+		start loc
+		maze  [][]rune
+	)
+
+	for y := 0; s.Scan(); y++ {
+		var row []rune
+		for x, r := range s.Text() {
+			if r == 'S' {
+				start = loc{[2]int{x, y}, &loc{}, pretty[r]}
+			}
+			row = append(row, pretty[r])
+		}
+		maze = append(maze, row)
+	}
+	return maze, start
+}
 
 func (m maze) String() string {
 	var s string
@@ -18,38 +50,66 @@ func (m maze) String() string {
 	return s
 }
 
+func (m maze) filter(end loc) maze {
+	for y, row := range m {
+		for x := range row {
+			m[y][x] = ' '
+		}
+	}
+
+	for end.coord != (loc{}).coord {
+		m[end.coord[1]][end.coord[0]] = end.symbol
+		end = *end.prev
+	}
+
+	return m
+}
+
 func (V1) Solve(input []byte, part int) (int, error) {
 	var (
 		r         = bytes.NewReader(input)
 		s         = bufio.NewScanner(r)
 		mz, start = newMaze(s)
-		count     = 1
 	)
-
 	fmt.Println(mz)
 
-	ds := start.directions(mz)
-	cw, ccw := ds[0], ds[1]
+	var (
+		count = 0
+		end   = loc{start.coord, start.prev, '┌'}
+	)
 
-	for cw.String() != ccw.String() {
-		fmt.Printf("cw: %s, prev: %s\n", cw, cw.prev)
-		cw = cw.directions(mz)[0]
-		fmt.Printf("ccw: %s, prev: %s\n", ccw, ccw.prev)
-		ccw = ccw.directions(mz)[0]
+	for len(end.directions(mz)) > 0 {
+		fmt.Printf("cw: %s, prev: %s\n", end, end.prev)
+		end = end.directions(mz)[0]
 		count++
 	}
 
-	return count, nil
+	if part == 2 {
+		var in bool
+		mz = mz.filter(end)
+
+		for y, row := range mz {
+			for x, r := range row {
+				// check
+				if r == ' ' && in {
+					mz[y][x] = '░'
+				}
+			}
+		}
+		fmt.Println(mz)
+	}
+
+	return count/2 + 1, nil
 }
 
 type loc struct {
-	x, y   int
+	coord  [2]int
 	prev   *loc
 	symbol rune
 }
 
 func (l loc) String() string {
-	return fmt.Sprintf("%c (%d, %d)", l.symbol, l.x, l.y)
+	return fmt.Sprintf("%c (%d, %d)", l.symbol, l.coord[0], l.coord[1])
 }
 
 // directions returns all locations to go to
@@ -59,36 +119,63 @@ func (l loc) directions(m maze) []loc {
 
 	for dir := 0; dir < 4; dir++ {
 		var nl loc
-		nl.x, nl.y = l.direction(dir)
+		nl.coord = l.direction(dir)
 
-		if nl.x >= 0 && nl.x < len(m) &&
-			nl.y >= 0 && nl.y < len(m[0]) {
+		if nl.coord[1] >= 0 && nl.coord[1] < len(m) &&
+			nl.coord[0] >= 0 && nl.coord[0] < len(m[0]) &&
+			l.prev.coord != nl.coord {
 
-			nl.symbol = m[nl.y][nl.x]
+			nl.symbol = m[nl.coord[1]][nl.coord[0]]
 			nl.prev = &l
 
-			fmt.Printf("cur: %s, dir: %d, new: %s\n", l, dir, nl)
+			// fmt.Printf("cur: %s, dir: %d, new: %s\n", l, dir, nl)
 
-			if l.prev.String() != nl.String() &&
-				fits(l.symbol, nl.symbol, dir) {
-				fmt.Printf("%s != %s\n", l.prev, nl)
+			if fits(l.symbol, nl.symbol, dir) {
+				// fmt.Printf("%s != %s\n", l.prev, nl)
 				ds = append(ds, nl)
 			}
 		}
 	}
-	fmt.Printf("valid dirs: %s\n\n", ds)
+	// fmt.Printf("valid dirs: %s\n\n", ds)
 	return ds
 }
 
 // toXY provides a new location given a
 // direction dir (0=left, 1=up, 2=right, 3=down)
-func (l loc) direction(dir int) (int, int) {
+func (l loc) direction(dir int) [2]int {
 	ls := map[int][2]int{
 		0: {-1, 0}, 1: {0, -1},
 		2: {1, 0}, 3: {0, 1},
 	}
 
-	return l.x + ls[dir][0], l.y + ls[dir][1]
+	return [2]int{l.coord[0] + ls[dir][0], l.coord[1] + ls[dir][1]}
+}
+
+func inside(cur loc, dir [2]int) [2]int {
+	switch cur.symbol {
+	case '┘':
+		if dir == [2]int{0, -1} {
+			return [2]int{1, 0}
+		}
+		return [2]int{0, -1}
+	case '┐':
+		if dir == [2]int{0, 1} {
+			return [2]int{-1, 0}
+		}
+		return [2]int{0, 1}
+	case '┌':
+		if dir == [2]int{1, 0} {
+			return [2]int{0, 1}
+		}
+		return [2]int{1, 0}
+	case '└':
+		if dir == [2]int{1, 0} {
+			return [2]int{0, -1}
+		}
+		return [2]int{1, 0}
+	default:
+		return cur.coord
+	}
 }
 
 // fitting maps pipe to fitting pipes for
@@ -110,7 +197,7 @@ var fitting = map[rune][4][]rune{
 	},
 }
 
-// connected checks if q fits onto p from
+// connectedchecks if q fits onto p from
 // direction dir (0=left, 1=up, 2=right, 3=down)
 func fits(p, q rune, dir int) bool {
 	// fmt.Printf("\tc: %c fits nl: %c\n", p, q)
@@ -120,36 +207,4 @@ func fits(p, q rune, dir int) bool {
 		}
 	}
 	return false
-}
-
-// pretty maps ugly symbols to pretty ones
-var pretty = map[rune]rune{
-	'|': '│',
-	'-': '─',
-	'F': '┌',
-	'L': '└',
-	'7': '┐',
-	'J': '┘',
-	'.': ' ',
-	'S': '🐿',
-}
-
-// build new pretty maze
-func newMaze(s *bufio.Scanner) (maze, loc) {
-	var (
-		start loc
-		maze  [][]rune
-	)
-
-	for y := 0; s.Scan(); y++ {
-		var row []rune
-		for x, r := range s.Text() {
-			if r == 'S' {
-				start = loc{x, y, &loc{}, pretty[r]}
-			}
-			row = append(row, pretty[r])
-		}
-		maze = append(maze, row)
-	}
-	return maze, start
 }
