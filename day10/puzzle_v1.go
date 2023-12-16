@@ -43,12 +43,11 @@ func newMaze(s *bufio.Scanner) (maze, loc) {
 	return maze, start
 }
 
-func (m maze) String() string {
-	var s string
+func (m maze) String() (s string) {
 	for _, row := range m {
 		s += string(row) + "\n"
 	}
-	return s
+	return
 }
 
 func (m maze) filter(end loc) maze {
@@ -122,7 +121,7 @@ func (V1) Solve(input []byte, part int) (int, error) {
 		s         = bufio.NewScanner(r)
 		mz, start = newMaze(s)
 	)
-	fmt.Println(mz)
+	// fmt.Println(mz)
 
 	var (
 		count = 0
@@ -142,8 +141,6 @@ func (V1) Solve(input []byte, part int) (int, error) {
 			in    bool
 		)
 
-		fmt.Println(mz)
-
 		for y, row := range mz {
 			for x, col := range row {
 				in = updateIn(col, in)
@@ -152,8 +149,10 @@ func (V1) Solve(input []byte, part int) (int, error) {
 					count++
 				}
 			}
-			fmt.Println(mz)
+			// fmt.Println(mz)
 		}
+
+		// fmt.Println(mz)
 
 		return count, nil
 	}
