@@ -31,84 +31,85 @@ func (V1) Solve(input []byte, part int) (int, error) {
 			groups = append(groups, n)
 		}
 
-		ps := permuations(springs)
-		cs := configurations(ps, groups)
+		clear(cache)
+		sum += configurations(springs, groups, 0, 0, 0)
 
-		sum += len(cs)
-
-		fmt.Printf("%v %v > %d\n", springs, groups, len(cs))
+		fmt.Printf("%v %v > %d\n", springs, groups, sum)
 		// fmt.Println(strings.Join(cs, "\n"))
 		// fmt.Printf("seq: %s %v\n", springs, groups)
-
 	}
 	return sum, nil
 }
 
-var cache = make(map[string]string)
+var cache = make(map[string]int)
 
-func permuations(springs string) (p []string) {
-	i := strings.Index(springs, "?")
+func configurations(ss string, gs []int, si, gi, count int) int {
+	// fmt.Printf("s: %s g: %v si: %d gi: %d c: %d\n", ss, gs, si, gi, count)
 
-	// tail
-	if i == -1 {
-		p = append(p, springs)
-		return
+	// check cache if configuration already visited
+	key := fmt.Sprintf("%d %d %d", si, gi, count)
+	if v, ok := cache[key]; ok {
+		return v
 	}
 
-	operational := springs[:i] + "." + springs[i+1:]
-	p = append(p, permuations(operational)...)
-
-	broken := springs[:i] + "#" + springs[i+1:]
-	p = append(p, permuations(broken)...)
-
-	return
-}
-
-func configurations(permutations []string, groups []int) (c []string) {
-	for _, p := range permutations {
-		// fmt.Printf("p: %s gs: %v\n", p, groups)
-		if matches(p, groups) {
-			// fmt.Printf("match: %t\n\n\n", true)
-			c = append(c, p)
+	// all groups matched
+	if gi == len(gs) {
+		// valid if no broken springs left
+		if strings.Contains(ss[si:], "#") {
+			return 0
+		} else {
+			return 1
 		}
 	}
-	return
-}
 
-func matches(p string, gs []int) bool {
+	// no springs left
+	if si == len(ss) {
+		// process last count
+		if count == gs[gi] {
+			gi++
+		}
+
+		// valid if all groups matched
+		if gi == len(gs) {
+			return 1
+		} else {
+			return 0
+		}
+
+	}
+
 	var matched int
-	var count int
-	for _, r := range p {
-		// fmt.Printf("i: %d last: %d count: %d matched: %d\n", i, len(p)-1, count, matched)
-
-		switch r {
-		case '#':
-			if matched == len(gs) {
-				return false
+	switch ss[si] {
+	case '.':
+		if count > 0 {
+			if count == gs[gi] {
+				matched = configurations(ss, gs, si+1, gi+1, 0)
+			} else {
+				matched = 0
 			}
-			count++
-		case '.':
-			if count == 0 {
-				continue
-			}
-
-			if matched >= len(gs) {
-				return false
-			}
-
-			if count != gs[matched] {
-				return false
-			}
-
-			matched++
-
-			count = 0
+		} else {
+			matched = configurations(ss, gs, si+1, gi, count)
 		}
+	case '#':
+		matched = configurations(ss, gs, si+1, gi, count+1)
+	case '?':
+		// handle .
+		if count > 0 {
+			if count == gs[gi] {
+				matched += configurations(ss, gs, si+1, gi+1, 0)
+			} else {
+				matched = 0
+			}
+		} else {
+			matched += configurations(ss, gs, si+1, gi, count)
+		}
+
+		// handle #
+		matched += configurations(ss, gs, si+1, gi, count+1)
 	}
 
-	if matched < len(gs) && count == gs[matched] {
-		matched++
-	}
+	// remember result for spring / group combination
+	cache[key] = matched
 
-	return matched == len(gs)
+	return matched
 }
