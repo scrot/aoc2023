@@ -26,12 +26,12 @@ func TestDay12(t *testing.T) {
 		input   []byte
 		want    int
 	}{
-		// {"p1Single", 1, day12.V1{}, []byte("???.### 1,1,3"), 1},
-		// {"p1Single", 1, day12.V1{}, []byte("?###???????? 3,2,1"), 10},
-		// {"p1Example", 1, day12.V1{}, []byte(example), 21},
-		// {"p1Input", 1, day12.V1{}, input, 7674},
-		// {"p2Example", 2, day12.V1{}, []byte(example), 525152},
-		{"p2Input", 2, day12.V1{}, input, 0},
+		{"p1Single", 1, day12.V1{}, []byte("???.### 1,1,3"), 1},
+		{"p1Single", 1, day12.V1{}, []byte("?###???????? 3,2,1"), 10},
+		{"p1Example", 1, day12.V1{}, []byte(example), 21},
+		{"p1Input", 1, day12.V1{}, input, 7674},
+		{"p2Example", 2, day12.V1{}, []byte(example), 525152},
+		{"p2Input", 2, day12.V1{}, input, 4443895258186},
 	}
 
 	for _, c := range cs {
