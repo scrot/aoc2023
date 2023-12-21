@@ -46,24 +46,6 @@ const (
 ....#...####.
 ..#.#.#..#...`
 
-	edgeCase2 = `..#.#.#..#...
-..#.#.#..#...
-....#...####.
-..##.#.#.#..#
-.#.#....#....
-#####..#.#.##
-.####.##.....
-..######.#...
-..##.#.#..###
-..##...#..###
-..######.#...
-.####.##.....
-#####..#.#.##
-.#.#....#....
-..##.#.#.#..#
-....#...####.
-..#.#.#..#..`
-
 	example = `#.##..##.
 ..#.##.#.
 ##......#
@@ -89,12 +71,14 @@ func TestDay13(t *testing.T) {
 		input   []byte
 		want    int
 	}{
-		// {"p1SingleH", 1, day13.V1{}, []byte(singleH), 5},
-		// {"p1SingleV", 1, day13.V1{}, []byte(singleV), 400},
-		// {"p1EdgeCase", 1, day13.V1{}, []byte(edgeCase), 100},
-		// // {"p1EdgeCase2", 1, day13.V1{}, []byte(edgeCase2), 0},
+		{"p1SingleH", 1, day13.V1{}, []byte(singleH), 5},
+		{"p1SingleV", 1, day13.V1{}, []byte(singleV), 400},
+		{"p1EdgeCase", 1, day13.V1{}, []byte(edgeCase), 100},
 		{"p1Example", 1, day13.V1{}, []byte(example), 405},
 		{"p1Input", 1, day13.V1{}, input, 27202},
+		{"p1SingleH", 2, day13.V1{}, []byte(singleH), 300},
+		{"p2Example", 2, day13.V1{}, []byte(example), 400},
+		{"p2Input", 2, day13.V1{}, input, 41566},
 	}
 
 	for _, c := range cs {
