@@ -22,22 +22,6 @@ O.#..O.#.#
 .......O..
 #....###..
 #OO..#....`
-
-	// 8 + 2
-	small = `O
-.
-#
-.
-.
-#
-.
-O`
-	small2 = `.
-.
-.`
-	small3 = `O
-O
-O`
 )
 
 func TestDay13(t *testing.T) {
@@ -48,11 +32,10 @@ func TestDay13(t *testing.T) {
 		input   []byte
 		want    int
 	}{
-		// {"p1Small", 1, day14.V1{}, []byte(small), 10},
-		// {"p1Small2", 1, day14.V1{}, []byte(small2), 0},
-		// {"p1Small3", 1, day14.V1{}, []byte(small3), 6},
-		// {"p1Example", 1, day14.V1{}, []byte(example), 136},
+		{"p1Example", 1, day14.V1{}, []byte(example), 136},
 		{"p1Input", 1, day14.V1{}, input, 109098},
+		{"p2Example", 2, day14.V2{}, []byte(example), 64},
+		{"p2Input", 2, day14.V2{}, input, 100064},
 	}
 
 	for _, c := range cs {
@@ -62,3 +45,11 @@ func TestDay13(t *testing.T) {
 		}
 	}
 }
+
+func benchmarkDay14(b *testing.B, s aoc2023.Solver, part int) {
+	for i := 0; i < b.N; i++ {
+		s.Solve(input, part)
+	}
+}
+func BenchmarkDay1Part1V1(b *testing.B) { benchmarkDay14(b, day14.V1{}, 1) }
+func BenchmarkDay1Part1V2(b *testing.B) { benchmarkDay14(b, day14.V2{}, 1) }

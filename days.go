@@ -6,6 +6,7 @@ import (
 	"github.com/scrot/aoc2023/day11"
 	"github.com/scrot/aoc2023/day12"
 	"github.com/scrot/aoc2023/day13"
+	"github.com/scrot/aoc2023/day14"
 	"github.com/scrot/aoc2023/day2"
 	"github.com/scrot/aoc2023/day3"
 	"github.com/scrot/aoc2023/day4"
@@ -34,4 +35,5 @@ var Days = map[int][]Solver{
 	11: {day11.V1{}},
 	12: {day12.V1{}},
 	13: {day13.V1{}},
+	14: {day14.V1{}, day14.V2{}},
 }
