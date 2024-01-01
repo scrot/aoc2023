@@ -21,8 +21,10 @@ func TestDay15(t *testing.T) {
 		input   []byte
 		want    int
 	}{
-		// {"p1Example", 1, day15.V1{}, []byte(example), 1320},
-		{"p1Input", 1, day15.V1{}, input, 0},
+		{"p1Example", 1, day15.V1{}, []byte(example), 1320},
+		{"p1Input", 1, day15.V1{}, input, 511498},
+		{"p2Example", 2, day15.V1{}, []byte(example), 145},
+		{"p2Input", 2, day15.V1{}, input, 284674},
 	}
 
 	for _, c := range cs {
