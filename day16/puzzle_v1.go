@@ -12,10 +12,39 @@ func (V1) Solve(input []byte, part int) (int, error) {
 		r = bytes.NewReader(input)
 		s = bufio.NewScanner(r)
 		g = newGrid(s)
+	)
 
-		visited = make(map[beam]bool)
-		start   = beam{loc{-1, 0}, DirRight}
-		b, bs   = beam{}, []beam{start}
+	if part == 1 {
+		start := beam{loc{-1, 0}, DirRight}
+		return energize(start, g), nil
+	}
+
+	if part == 2 {
+		var starts []beam
+		for y := range g {
+			starts = append(starts, beam{loc{-1, y}, DirRight})
+			starts = append(starts, beam{loc{len(g[0]), y}, DirLeft})
+		}
+		for x := range g[0] {
+			starts = append(starts, beam{loc{x, -1}, DirDown})
+			starts = append(starts, beam{loc{x, len(g)}, DirUp})
+		}
+
+		var maxEnergized int
+		for _, start := range starts {
+			maxEnergized = max(maxEnergized, energize(start, g))
+		}
+		return maxEnergized, nil
+	}
+
+	return 0, nil
+}
+
+func energize(start beam, g grid) int {
+	var (
+		energized = make(map[loc]bool)
+		visited   = make(map[beam]bool)
+		b, bs     = beam{}, []beam{start}
 	)
 
 	for len(bs) > 0 {
@@ -27,13 +56,14 @@ func (V1) Solve(input []byte, part int) (int, error) {
 		visited[b] = true
 
 		if b != start {
-			g[b.pos.y][b.pos.x].energized = true
+			// g[b.pos.y][b.pos.x].energized = true
+			energized[b.pos] = true
 		}
 
 		bs = append(bs, b.step(&g)...)
 	}
 
-	return g.energized(), nil
+	return len(energized)
 }
 
 type grid [][]tile

@@ -42,10 +42,12 @@ func TestDay16(t *testing.T) {
 		input   []byte
 		want    int
 	}{
-		// {"p1Example", 1, day16.V1{}, []byte(example), 46},
+		{"p1Example", 1, day16.V1{}, []byte(example), 46},
 		// {"p1Edge", 1, day16.V1{}, []byte(edge), 3},
 		// {"p1Edge2", 1, day16.V1{}, []byte(edge2), 89},
-		{"p1Input", 1, day16.V1{}, input, 7798}, // 6311 too low
+		{"p1Input", 1, day16.V1{}, input, 7798},
+		{"p2Example", 2, day16.V1{}, []byte(example), 51},
+		{"p2Input", 2, day16.V1{}, input, 0},
 	}
 
 	for _, c := range cs {
