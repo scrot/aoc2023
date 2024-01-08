@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -29,11 +31,16 @@ func main() {
 	}
 
 	// parse specific flags
-	var version, part int
+	var (
+		session       string
+		version, part int
+	)
+
 	cmds["run"].IntVar(&version, "version", 1, "version of puzzle")
 	cmds["run"].IntVar(&part, "part", 1, "part of the puzzle (1 or 2)")
 	cmds["profile"].IntVar(&version, "version", 1, "version of puzzle")
 	cmds["profile"].IntVar(&part, "part", 1, "part of the puzzle (1 or 2)")
+	cmds["template"].StringVar(&session, "session", "", "adventofcode.com session token")
 
 	sub, ok := cmds[os.Args[1]]
 	if !ok {
@@ -113,11 +120,35 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if _, err := os.Create(path.Join(dir, "input.txt")); err != nil {
+		pinput, err := os.Create(path.Join(dir, "input.txt"))
+		if err != nil {
 			if errors.Is(err, fs.ErrExist) {
 				log.Fatalf("file input.txt already exists, no action taken")
 			}
 			log.Fatal(err)
 		}
+
+		if session == "" {
+			log.Fatal(errors.New("no session provided, provide session token"))
+		}
+
+		url := fmt.Sprintf("https://adventofcode.com/2023/day/%d/input", day)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c := http.Cookie{Name: "session", Value: session}
+		req.AddCookie(&c)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var buf bytes.Buffer
+		if _, err := buf.ReadFrom(resp.Body); err != nil {
+			log.Fatal(err)
+		}
+		pinput.Write(buf.Bytes())
 	}
 }
