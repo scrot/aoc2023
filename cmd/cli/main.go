@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 
 	"github.com/scrot/aoc2023"
 )
@@ -15,6 +18,7 @@ var cmds = map[string]*flag.FlagSet{
 	"profile":   flag.NewFlagSet("profile", flag.ExitOnError),
 	"test":      flag.NewFlagSet("test", flag.ExitOnError),
 	"benchmark": flag.NewFlagSet("benchmark", flag.ExitOnError),
+	"template":  flag.NewFlagSet("template", flag.ExitOnError),
 }
 
 func main() {
@@ -75,6 +79,45 @@ func main() {
 		c.Stdout = os.Stdout
 		if err := c.Run(); err != nil {
 			log.Fatalf("%s: %s", c.String(), err)
+		}
+	case "template":
+		dir := fmt.Sprintf("./day%d", day)
+		if err := os.Mkdir(dir, 0775); err != nil {
+			if errors.Is(err, fs.ErrExist) {
+				log.Fatalf("directory %s already exists, no action taken", dir)
+			}
+			log.Fatal(err)
+		}
+
+		pv1, err := os.Create(path.Join(dir, "puzzle_v1.go"))
+		if err != nil {
+			if errors.Is(err, fs.ErrExist) {
+				log.Fatalf("file %s already exists, no action taken", pv1.Name())
+			}
+			log.Fatal(err)
+		}
+		defer pv1.Close()
+		if err := writeTemplate(puzzleImpl, pv1, fmt.Sprintf("day%d", day)); err != nil {
+			log.Fatal(err)
+		}
+
+		ptest, err := os.Create(path.Join(dir, "puzzle_test.go"))
+		if err != nil {
+			if errors.Is(err, fs.ErrExist) {
+				log.Fatalf("file %s already exists, no action taken", ptest.Name())
+			}
+			log.Fatal(err)
+		}
+		defer ptest.Close()
+		if err := writeTemplate(puzzleTest, ptest, fmt.Sprintf("day%d", day)); err != nil {
+			log.Fatal(err)
+		}
+
+		if _, err := os.Create(path.Join(dir, "input.txt")); err != nil {
+			if errors.Is(err, fs.ErrExist) {
+				log.Fatalf("file input.txt already exists, no action taken")
+			}
+			log.Fatal(err)
 		}
 	}
 }
