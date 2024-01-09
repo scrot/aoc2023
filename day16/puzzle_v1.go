@@ -20,19 +20,9 @@ func (V1) Solve(input []byte, part int) (int, error) {
 	}
 
 	if part == 2 {
-		var starts []beam
-		for y := range g {
-			starts = append(starts, beam{loc{-1, y}, DirRight})
-			starts = append(starts, beam{loc{len(g[0]), y}, DirLeft})
-		}
-		for x := range g[0] {
-			starts = append(starts, beam{loc{x, -1}, DirDown})
-			starts = append(starts, beam{loc{x, len(g)}, DirUp})
-		}
-
 		var maxEnergized int
-		for _, start := range starts {
-			maxEnergized = max(maxEnergized, energize(start, g))
+		for _, b := range g.genBeams() {
+			maxEnergized = max(maxEnergized, energize(b, g))
 		}
 		return maxEnergized, nil
 	}
@@ -75,6 +65,18 @@ func newGrid(s *bufio.Scanner) (g grid) {
 			r = append(r, tile{b, false})
 		}
 		g = append(g, r)
+	}
+	return
+}
+
+func (g grid) genBeams() (bs []beam) {
+	for y := range g {
+		bs = append(bs, beam{loc{-1, y}, DirRight})
+		bs = append(bs, beam{loc{len(g[0]), y}, DirLeft})
+	}
+	for x := range g[0] {
+		bs = append(bs, beam{loc{x, -1}, DirDown})
+		bs = append(bs, beam{loc{x, len(g)}, DirUp})
 	}
 	return
 }

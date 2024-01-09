@@ -22,18 +22,6 @@ const example = `.|...\....
 .|....-|.\
 ..//.|....`
 
-const edge = `\.
-..
-..`
-
-const edge2 = `....\....
-.........
-../.-.\..
-.........
-..\...\..
-.........
-.........`
-
 func TestDay16(t *testing.T) {
 	cs := []struct {
 		name    string
@@ -43,11 +31,11 @@ func TestDay16(t *testing.T) {
 		want    int
 	}{
 		{"p1Example", 1, day16.V1{}, []byte(example), 46},
-		// {"p1Edge", 1, day16.V1{}, []byte(edge), 3},
-		// {"p1Edge2", 1, day16.V1{}, []byte(edge2), 89},
 		{"p1Input", 1, day16.V1{}, input, 7798},
 		{"p2Example", 2, day16.V1{}, []byte(example), 51},
-		{"p2Input", 2, day16.V1{}, input, 0},
+		{"p2Input", 2, day16.V1{}, input, 8026},
+		{"p2Example", 2, day16.V2{}, []byte(example), 51},
+		{"p2Input", 2, day16.V2{}, input, 8026},
 	}
 
 	for _, c := range cs {
@@ -58,3 +46,15 @@ func TestDay16(t *testing.T) {
 
 	}
 }
+
+func benchmarkDay16(b *testing.B, s aoc2023.Solver, part int) {
+	for i := 0; i < b.N; i++ {
+		s.Solve(input, part)
+	}
+}
+
+// func BenchmarkDay16Part1V1(b *testing.B) { benchmarkDay16(b, day16.V1{}, 1) }
+func BenchmarkDay16Part2V1(b *testing.B) { benchmarkDay16(b, day16.V1{}, 2) }
+
+// func BenchmarkDay16Part1V2(b *testing.B) { benchmarkDay16(b, day16.V2{}, 1) }
+func BenchmarkDay16Part2V2(b *testing.B) { benchmarkDay16(b, day16.V2{}, 2) }
